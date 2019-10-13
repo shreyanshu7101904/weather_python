@@ -1,22 +1,33 @@
 from datetime import datetime
-from config import *
+from .config import *
 import requests
 from termcolor import colored
 
 
+class LocationArgumentError(Exception):
+    def __init__(self):
+        print(colored("Location parameter is required", "red"))
+
+class DaysRequiredError(Exception):
+    def __init__(self):
+        print(colored("Number of Days params is required for type DayWise", "red"))
+
 class RequestError(Exception):
     """Response Error Exception"""
+
     def __init__(self, status_code, message):
         self.status_code = status_code
         self.message = message
-        print(colored("Error in response, Response Code = ", 'red'), colored(self.status_code, 'yellow'))
+        print(colored("Error in response, Response Code = ", 'red'),
+              colored(self.status_code, 'yellow'))
         print("Error Message json", self.message)
+
 
 class NumberOfDaysError(Exception):
     def __init__(self, days):
         self.days = days
-        print(colored("Number of days is between 1-15", 'Red'), colored(self.days, 'yellow'))
-
+        print(colored("Number of days is between 1-15", 'Red'),
+              colored(self.days, 'yellow'))
 
 
 class WeatherReport:
@@ -32,18 +43,18 @@ class WeatherReport:
         self.lon = None
         self.place_id = None
 
-
     def __str__(self):
         return str(self.pin_code)
 
     def _convertDatetimeToStr(self, values):
 
-        return [str(datetime.strptime(i.split("+")[0], \
-                '%Y-%m-%dT%H:%M:%S'))for i in values if i is not '']
+        return [str(datetime.strptime(i.split("+")[0],
+                                      '%Y-%m-%dT%H:%M:%S'))for i in values if i is not '']
 
     def getGeoCoordinates(self):
         url = location_point + apiKey + \
-            "&format=json&language=en-IN&postalKey={}%3AIN".format((self.pin_code))
+            "&format=json&language=en-IN&postalKey={}%3AIN".format(
+                (self.pin_code))
         response = requests.get(url)
         if response.status_code == 200:
             data = response.json()
@@ -61,14 +72,15 @@ class WeatherReport:
         for key in kwargs:
             print(colored(key, 'green'), "\t", end="")
             for cnt, val in enumerate(kwargs[key]):
-                print(colored(val, 'yellow'), "\t", end="" )
+                print(colored(val, 'yellow'), "\t", end="")
                 if cnt == 5:
                     print("\n")
             print("\n")
 
     def getHourlyForecast(self):
         hourly = hourly_url + apiKey +\
-            "&format=json&geocode={}%2C{}&language=en-IN&units=m".format(self.lat,self.lon)
+            "&format=json&geocode={}%2C{}&language=en-IN&units=m".format(
+                self.lat, self.lon)
         response = requests.get(hourly)
         if response.status_code == 200:
             data = response.json()["vt1hourlyForecast"]
@@ -84,7 +96,7 @@ class WeatherReport:
             feels_like = data["feelsLike"]
             self.pretty_print(
                 Time=process_time,
-                Temperature = temperature,
+                Temperature=temperature,
                 Phrase=phrase,
                 Feels_Like=feels_like,
                 Precpitation=precpitation,
@@ -101,7 +113,8 @@ class WeatherReport:
         if days < 0 or days > 15:
             raise NumberOfDaysError(days)
         daily_forecast = daily_url + apiKey +\
-        "&format=json&geocode={}%2C{}&language=en-IN&units=m".format(self.lat,self.lon)
+            "&format=json&geocode={}%2C{}&language=en-IN&units=m".format(
+                self.lat, self.lon)
         response = requests.get(daily_forecast)
         if response.status_code == 200:
             data = response.json()["vt1dailyForecast"]
@@ -123,38 +136,42 @@ class WeatherReport:
             wind_speed = data["day"]["humidityPct"]
             winddirdegrees = data["day"]["windDirDegrees"]
             self.pretty_print(
-                Date = dates,
-                Sunrise = sunrise,
-                Sunset = sunset,
-                Moon_Phrase = moon_phrase,
-                Moon_Rise = moonrise,
-                Moon_Set = moonset,
-                Temprature = temprature,
-                Narrative = narrative,
-                Day_Of_Week = day_of_week,
-                Precipitation = precipitation,
-                Precipitation_Amount = precipitation_amount,
-                UV_Index = uvindex,
-                UV_Description = uv_description,
-                Phrase = phrase,
-                Humidity = humidity,
-                Wind_Speed = wind_speed,
-                Wind_Direction = winddirdegrees
-                )
+                Date=dates,
+                Sunrise=sunrise,
+                Sunset=sunset,
+                Moon_Phrase=moon_phrase,
+                Moon_Rise=moonrise,
+                Moon_Set=moonset,
+                Temprature=temprature,
+                Narrative=narrative,
+                Day_Of_Week=day_of_week,
+                Precipitation=precipitation,
+                Precipitation_Amount=precipitation_amount,
+                UV_Index=uvindex,
+                UV_Description=uv_description,
+                Phrase=phrase,
+                Humidity=humidity,
+                Wind_Speed=wind_speed,
+                Wind_Direction=winddirdegrees
+            )
             pass
         else:
             raise RequestError(response.status_code, response.json())
 
+    def performOperation(self, days=None):
+        self.getGeoCoordinates()
+        if self.type == 'Today':
+            self.getHourlyForecast()
+        elif  self.type == "DayWise" and days is not None:
+            self.getDayWiseForecast(days)
+        elif days is None:
+            raise DaysRequiredError
+        else:
+            raise ValueError
 
 if __name__ == "__main__":
-    ob = WeatherReport("560062","a" )
+    ob = WeatherReport("560062", "a")
     print(str(ob))
     print(ob.getGeoCoordinates())
     # ob.getHourlyForecast()
     ob.getDayWiseForecast(5)
-    
-
-
-
-
-
