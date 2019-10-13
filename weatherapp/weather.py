@@ -8,9 +8,11 @@ class LocationArgumentError(Exception):
     def __init__(self):
         print(colored("Location parameter is required", "red"))
 
+
 class DaysRequiredError(Exception):
     def __init__(self):
         print(colored("Number of Days params is required for type DayWise", "red"))
+
 
 class RequestError(Exception):
     """Response Error Exception"""
@@ -40,6 +42,7 @@ class WeatherReport:
         lon - longitude *optional
 
     """
+
     def __init__(self, pin_code, type_, date_time=None, lat=None, lon=None):
         self.pin_code = pin_code
         self.type = type_
@@ -178,11 +181,9 @@ class WeatherReport:
         self.getGeoCoordinates()
         if self.type == 'Today':
             self.getHourlyForecast()
-        elif  self.type == "DayWise" and days is not None:
+        elif self.type == "DayWise" and days is not None:
             self.getDayWiseForecast(days)
         elif days is None:
             raise DaysRequiredError
         else:
             raise ValueError
-
-
