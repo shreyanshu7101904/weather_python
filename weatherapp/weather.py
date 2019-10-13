@@ -31,7 +31,15 @@ class NumberOfDaysError(Exception):
 
 
 class WeatherReport:
+    """Weather Report class
+    arguments
+        pincode - pincode *required
+        type_ - type of Forecast *required
+        date_time - date *optional
+        lat - latitude *optional
+        lon - longitude *optional
 
+    """
     def __init__(self, pin_code, type_, date_time=None, lat=None, lon=None):
         self.pin_code = pin_code
         self.type = type_
@@ -44,14 +52,16 @@ class WeatherReport:
         self.place_id = None
 
     def __str__(self):
+        """Returns Pincode Attribute"""
         return str(self.pin_code)
 
     def _convertDatetimeToStr(self, values):
-
+        """Convert Datetime values to human readable format"""
         return [str(datetime.strptime(i.split("+")[0],
                                       '%Y-%m-%dT%H:%M:%S'))for i in values if i is not '']
 
     def getGeoCoordinates(self):
+        """Get geocoordinates of location"""
         url = location_point + apiKey + \
             "&format=json&language=en-IN&postalKey={}%3AIN".format(
                 (self.pin_code))
@@ -69,15 +79,19 @@ class WeatherReport:
             raise RequestError(response.status_code, response.json())
 
     def pretty_print(self, days=None, **kwargs):
+        """pretty prints json data"""
         for key in kwargs:
             print(colored(key, 'green'), "\t", end="")
             for cnt, val in enumerate(kwargs[key]):
                 print(colored(val, 'yellow'), "\t", end="")
                 if cnt == 5:
                     print("\n")
+                if days is not None and days == cnt:
+                    break
             print("\n")
 
     def getHourlyForecast(self):
+        """Get Hourly Forecast Data"""
         hourly = hourly_url + apiKey +\
             "&format=json&geocode={}%2C{}&language=en-IN&units=m".format(
                 self.lat, self.lon)
@@ -110,6 +124,7 @@ class WeatherReport:
             raise RequestError(response.status_code, response.json())
 
     def getDayWiseForecast(self, days):
+        """Get DayWise Forecast"""
         if days < 0 or days > 15:
             raise NumberOfDaysError(days)
         daily_forecast = daily_url + apiKey +\
@@ -159,6 +174,7 @@ class WeatherReport:
             raise RequestError(response.status_code, response.json())
 
     def performOperation(self, days=None):
+        """Plug and play for command line file"""
         self.getGeoCoordinates()
         if self.type == 'Today':
             self.getHourlyForecast()
@@ -169,9 +185,4 @@ class WeatherReport:
         else:
             raise ValueError
 
-if __name__ == "__main__":
-    ob = WeatherReport("560062", "a")
-    print(str(ob))
-    print(ob.getGeoCoordinates())
-    # ob.getHourlyForecast()
-    ob.getDayWiseForecast(5)
+
