@@ -3,7 +3,7 @@ from setuptools import setup, find_packages
 with open('requirements.txt') as f:
     requirements = f.readlines()
 
-long_description = 'CloudSEK demo Weather app'
+long_description = 'CloudSEK Demo Weather app'
 setup(
     name='Temprature Module',
     version='1.0',
