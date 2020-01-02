@@ -6,7 +6,7 @@ with open('requirements.txt') as f:
 long_description = 'CloudSEK Demo Weather app'
 setup(
     name='Temprature Module',
-    version='1.0',
+    version='0.0.1',
     author='Shreyanshu Shankar',
     author_email='shreyanshuperfect13@gmail.com',
     url='https://github.com/shreyanshu7101904/weather_python.git',
